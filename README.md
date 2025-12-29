@@ -1,6 +1,4 @@
-# Simple Notes App with React Native and Supabase
-
-AppCrew assessment Notes App.
+# AppCrew assessment Notes App.
 
 ## 🚀 Project Setup
 
