@@ -7,6 +7,7 @@ import {
   Alert,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,17 +18,21 @@ export default function EditNote() {
   const { id } = useLocalSearchParams();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [loadingFetch, setLoadingFetch] = useState(true);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     if (id) {
       const fetchNote = async () => {
+        setLoadingFetch(true);
         const netInfo = await NetInfo.fetch();
         if (!netInfo.isConnected) {
           Alert.alert(
             "Error fetching note",
             "Please check your internet connection.",
           );
+          setLoadingFetch(false);
           return;
         }
         const { data, error } = await supabase
@@ -44,18 +49,21 @@ export default function EditNote() {
           setTitle(data.title);
           setContent(data.content);
         }
+        setLoadingFetch(false);
       };
       fetchNote();
     }
   }, [id]);
 
   const updateNote = async () => {
+    setLoadingUpdate(true);
     const netInfo = await NetInfo.fetch();
     if (!netInfo.isConnected) {
       Alert.alert(
         "No internet connection",
         "Please check your internet connection and try again.",
       );
+      setLoadingUpdate(false);
       return;
     }
     const { error } = await supabase
@@ -64,6 +72,7 @@ export default function EditNote() {
       .eq("id", id);
     if (error) {
       Alert.alert("Error updating note", error.message);
+      setLoadingUpdate(false);
     } else {
       router.replace("/(home)");
     }
@@ -80,24 +89,39 @@ export default function EditNote() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Note</Text>
       </View>
-      <View style={styles.container}>
-        <TextInput
-          style={styles.input}
-          placeholder="Title"
-          value={title}
-          onChangeText={setTitle}
-        />
-        <TextInput
-          style={[styles.input, styles.contentInput]}
-          placeholder="Content"
-          value={content}
-          onChangeText={setContent}
-          multiline
-        />
-        <TouchableOpacity style={styles.updateButton} onPress={updateNote}>
-          <Text style={styles.updateButtonText}>Update</Text>
-        </TouchableOpacity>
-      </View>
+      {loadingFetch ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#000000" />
+        </View>
+      ) : (
+        <View style={styles.container}>
+          <TextInput
+            style={styles.input}
+            placeholder="Title"
+            value={title}
+            onChangeText={setTitle}
+            placeholderTextColor="#888888"
+          />
+          <TextInput
+            style={[styles.input, styles.contentInput]}
+            placeholder="Content"
+            value={content}
+            onChangeText={setContent}
+            multiline
+            placeholderTextColor="#888888"
+          />
+          <TouchableOpacity
+            style={[styles.updateButton, loadingUpdate && { opacity: 0.5 }]}
+            onPress={loadingUpdate ? undefined : updateNote}
+          >
+            {loadingUpdate ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.updateButtonText}>Update</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -148,5 +172,10 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

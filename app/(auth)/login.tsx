@@ -5,11 +5,12 @@ import {
   View,
   AppState,
   TextInput,
-  Button,
+  TouchableOpacity,
   Text,
+  ActivityIndicator,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
-import { Link } from "expo-router";
+import { router } from "expo-router";
 
 AppState.addEventListener("change", (nextAppState) => {
   if (nextAppState === "active") {
@@ -48,6 +49,7 @@ export default function Auth() {
             placeholder="email@address.com"
             autoCapitalize={"none"}
             style={styles.input}
+            placeholderTextColor="#888888"
           />
         </View>
         <View style={styles.inputContainer}>
@@ -58,19 +60,30 @@ export default function Auth() {
             placeholder="Password"
             autoCapitalize={"none"}
             style={styles.input}
+            placeholderTextColor="#888888"
           />
         </View>
         <View style={styles.buttonContainer}>
-          <Button
-            title="Sign in"
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
             disabled={loading}
             onPress={() => signInWithEmail()}
-          />
+          >
+            {loading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign in</Text>
+            )}
+          </TouchableOpacity>
         </View>
         <View style={styles.buttonContainer}>
-          <Link href="/(auth)/signup" asChild>
-            <Button title="Sign up" disabled={loading} />
-          </Link>
+          <TouchableOpacity
+            onPress={() => router.replace("/(auth)/signup")}
+            style={[styles.button, loading && styles.buttonDisabled]}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>Sign up</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -108,5 +121,19 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginBottom: 10,
+  },
+  button: {
+    backgroundColor: "#000000",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

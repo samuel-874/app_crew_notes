@@ -8,6 +8,7 @@ import {
   Alert,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../context/AuthContext";
@@ -24,15 +25,18 @@ export default function Index() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const fetchNotes = useCallback(
     async (searchTerm: string) => {
+      setLoading(true);
       const netInfo = await NetInfo.fetch();
       if (!netInfo.isConnected) {
         Alert.alert(
           "Error fetching notes",
           "Please check your internet connection.",
         );
+        setLoading(false);
         return;
       }
       let query = supabase.from("notes").select("*").eq("user_id", user?.id);
@@ -50,6 +54,7 @@ export default function Index() {
       } else {
         setNotes(data as Note[]);
       }
+      setLoading(false);
     },
     [user],
   );
@@ -114,33 +119,38 @@ export default function Index() {
         placeholder="Search notes..."
         value={search}
         onChangeText={setSearch}
+        placeholderTextColor="#888888"
       />
-      <FlatList
-        data={notes}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.note}>
-            <View style={styles.noteTextContainer}>
-              <Text style={styles.noteTitle}>{item.title}</Text>
-              <Text style={styles.noteContent}>{item.content}</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#000000" />
+      ) : (
+        <FlatList
+          data={notes}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.note}>
+              <View style={styles.noteTextContainer}>
+                <Text style={styles.noteTitle}>{item.title}</Text>
+                <Text style={styles.noteContent}>{item.content}</Text>
+              </View>
+              <View style={styles.actionsContainer}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => router.push(`/(home)/edit/${item.id}`)}
+                >
+                  <Text style={styles.actionButtonText}>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => deleteNote(item.id)}
+                >
+                  <Text style={styles.deleteButtonText}>Delete</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.actionsContainer}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => router.push(`/(home)/edit/${item.id}`)}
-              >
-                <Text style={styles.actionButtonText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => deleteNote(item.id)}
-              >
-                <Text style={styles.deleteButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
+          )}
+        />
+      )}
     </View>
   );
 }

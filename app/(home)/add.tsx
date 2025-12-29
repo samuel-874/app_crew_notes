@@ -6,6 +6,7 @@ import {
   Alert,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../context/AuthContext";
@@ -18,16 +19,19 @@ export default function AddNote() {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const saveNote = async () => {
     if (!user) return;
+    setLoading(true);
     const netInfo = await NetInfo.fetch();
     if (!netInfo.isConnected) {
       Alert.alert(
         "No internet connection",
         "Please check your internet connection and try again.",
       );
+      setLoading(false);
       return;
     }
     const { error } = await supabase
@@ -35,6 +39,7 @@ export default function AddNote() {
       .insert([{ title, content, user_id: user.id }]);
     if (error) {
       Alert.alert("Error saving note", error.message);
+      setLoading(false);
     } else {
       router.replace("/(home)");
     }
@@ -57,6 +62,7 @@ export default function AddNote() {
           placeholder="Title"
           value={title}
           onChangeText={setTitle}
+          placeholderTextColor="#888888"
         />
         <TextInput
           style={[styles.input, styles.contentInput]}
@@ -64,9 +70,17 @@ export default function AddNote() {
           value={content}
           onChangeText={setContent}
           multiline
+          placeholderTextColor="#888888"
         />
-        <TouchableOpacity style={styles.saveButton} onPress={saveNote}>
-          <Text style={styles.saveButtonText}>Save</Text>
+        <TouchableOpacity
+          style={[styles.saveButton, loading && { opacity: 0.5 }]}
+          onPress={loading ? undefined : saveNote}
+        >
+          {loading ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={styles.saveButtonText}>Save</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
