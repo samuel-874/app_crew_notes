@@ -1,6 +1,6 @@
 # AppCrew assessment Notes App.
 
-## 🚀 Project Setup
+## Project Setup
 
 1.  **Clone the repository:**
     ```bash
@@ -59,13 +59,14 @@
 
       Note: The `.env` file is included in `.gitignore` to prevent committing sensitive information.
 
-## ▶️ Running the Project Locally
+## Running the Project Locally
 
 1.  **Start the app:**
     ```bash
     npx expo start
     ```
 2.  Follow the instructions in the terminal to run the app on an Android emulator or a physical device.
+
 
 ##  Supabase Schema Details
 
@@ -80,13 +81,13 @@
 | `created_at`| `TIMESTAMPTZ`| The date and time the note was created       |
 | `updated_at`| `TIMESTAMPTZ`| The date and time the note was last updated  |
 
-## 🔐 Authentication Approach
+## Authentication Approach
 
 - The app uses Supabase's built-in authentication for email and password sign-up and sign-in.
 - User sessions are persisted using `@react-native-async-storage/async-storage`. When a user reopens the app, their session is automatically restored.
 - **Row Level Security (RLS)** is enabled on the `notes` table to ensure that users can only access their own notes. The policies for RLS are defined in the SQL script above.
 
-## 📝 Assumptions and Trade-offs
+## Assumptions and Trade-offs
 
 - **Client-side search:** The app checks network connectivity before performing search operations. If the device is offline, the app will show an error message.
 - **Basic UI:** The UI is kept simple and functional to focus on the core features of the application.
