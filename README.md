@@ -1,50 +1,95 @@
-# Welcome to your Expo app 👋
+# Simple Notes App with React Native and Supabase
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a simple notes application built with React Native and Supabase.
 
-## Get started
+## 🚀 Project Setup
 
-1. Install dependencies
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/your-repo-name.git
+    cd your-repo-name
+    ```
 
-   ```bash
-   npm install
-   ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-2. Start the app
+3.  **Set up Supabase:**
+    - Create a new project on [Supabase](https://supabase.com/).
+    - In your Supabase project, go to the **SQL Editor** and run the following script to create the `notes` table and enable Row Level Security (RLS):
 
-   ```bash
-   npx expo start
-   ```
+      ```sql
+      -- Create the notes table
+      CREATE TABLE notes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES auth.users(id) NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT,
+        created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+        updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+      );
 
-In the output, you'll find options to open the app in a
+      -- Enable Row Level Security
+      ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+      -- Policies for notes
+      CREATE POLICY "Users can only see their own notes"
+        ON notes FOR SELECT
+        USING (auth.uid() = user_id);
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+      CREATE POLICY "Users can insert their own notes"
+        ON notes FOR INSERT
+        WITH CHECK (auth.uid() = user_id);
 
-## Get a fresh project
+      CREATE POLICY "Users can update their own notes"
+        ON notes FOR UPDATE
+        USING (auth.uid() = user_id);
 
-When you're ready, run:
+      CREATE POLICY "Users can delete their own notes"
+        ON notes FOR DELETE
+        USING (auth.uid() = user_id);
+      ```
 
-```bash
-npm run reset-project
-```
+    - Get your project's **URL** and **anon key** from **Settings > API**.
+    - Create a `.env` file in the project root and add your Supabase credentials:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+      ```
+      EXPO_PUBLIC_SUPABASE_URL=your_supabase_url_here
+      EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+      ```
 
-## Learn more
+      Note: The `.env` file is included in `.gitignore` to prevent committing sensitive information.
 
-To learn more about developing your project with Expo, look at the following resources:
+## ▶️ Running the Project Locally
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1.  **Start the app:**
+    ```bash
+    npx expo start
+    ```
+2.  Follow the instructions in the terminal to run the app on an Android emulator or a physical device.
 
-## Join the community
+##  Supabase Schema Details
 
-Join our community of developers creating universal apps.
+### `notes` table
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+| Column      | Type        | Description                                  |
+| :---------- | :---------- | :------------------------------------------- |
+| `id`        | `UUID`      | Primary key for the note                     |
+| `user_id`   | `UUID`      | Foreign key referencing `auth.users(id)`     |
+| `title`     | `TEXT`      | The title of the note                        |
+| `content`   | `TEXT`      | The content of the note                      |
+| `created_at`| `TIMESTAMPTZ`| The date and time the note was created       |
+| `updated_at`| `TIMESTAMPTZ`| The date and time the note was last updated  |
+
+## 🔐 Authentication Approach
+
+- The app uses Supabase's built-in authentication for email and password sign-up and sign-in.
+- User sessions are persisted using `@react-native-async-storage/async-storage`. When a user reopens the app, their session is automatically restored.
+- **Row Level Security (RLS)** is enabled on the `notes` table to ensure that users can only access their own notes. The policies for RLS are defined in the SQL script above.
+
+## 📝 Assumptions and Trade-offs
+
+- **Client-side search:** The search functionality is implemented on the client-side for simplicity. For a larger dataset, a server-side search would be more performant.
+- **No offline support:** The app does not handle offline mode. If the device is offline, the app will not be able to fetch, create, edit, or delete notes.
+- **Basic UI:** The UI is kept simple and functional to focus on the core features of the application.
