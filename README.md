@@ -1,13 +1,13 @@
 # Simple Notes App with React Native and Supabase
 
-This is a simple notes application built with React Native and Supabase.
+AppCrew assessment Notes App.
 
 ## 🚀 Project Setup
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/your-repo-name.git
-    cd your-repo-name
+    git clone https://github.com/samuel-874/app_crew_notes.git
+    cd app_crew_notes
     ```
 
 2.  **Install dependencies:**
@@ -51,12 +51,12 @@ This is a simple notes application built with React Native and Supabase.
         USING (auth.uid() = user_id);
       ```
 
-    - Get your project's **URL** and **anon key** from **Settings > API**.
+    - Get your project's **URL** and **publicshable key** from **Settings > API**.
     - Create a `.env` file in the project root and add your Supabase credentials:
 
       ```
       EXPO_PUBLIC_SUPABASE_URL=your_supabase_url_here
-      EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+      EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_publishable_key_here
       ```
 
       Note: The `.env` file is included in `.gitignore` to prevent committing sensitive information.
@@ -90,6 +90,5 @@ This is a simple notes application built with React Native and Supabase.
 
 ## 📝 Assumptions and Trade-offs
 
-- **Client-side search:** The search functionality is implemented on the client-side for simplicity. For a larger dataset, a server-side search would be more performant.
-- **No offline support:** The app does not handle offline mode. If the device is offline, the app will not be able to fetch, create, edit, or delete notes.
+- **Client-side search:** The app checks network connectivity before performing search operations. If the device is offline, the app will show an error message.
 - **Basic UI:** The UI is kept simple and functional to focus on the core features of the application.
